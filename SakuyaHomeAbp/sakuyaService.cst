@@ -1,0 +1,123 @@
+﻿<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Template Language="C#" TargetLanguage="Text" %>
+<%@ Property Name="Table" DeepLoad="True" Type="TableSchema" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+<%@ Property Name="NameSpace" Type="System.String" %>
+using System;
+using System.Collections.Generic;
+using System.IO.Ports;
+using System.Linq;
+using System.Web.Http;
+using Abp.Application.Services;
+using Abp.Domain.Repositories;
+using AutoMapper;
+using Sakuya.Model;
+using Sakuya.Pager;
+
+namespace <%=NameSpace %>.AppServices
+{
+    public class <%=Table.Name %>AppService:<%=NameSpace %>AppServiceBase,I<%=NameSpace %>AppService
+    {
+        private IRepository<<%=Table.Name %>Entity,string> _repository; 
+        public <%=Table.Name %>AppServices(IRepository<<%=Table.Name %>Entity, string> repository)
+        {
+            _repository = repository;
+        }
+
+        #region 获取数据
+
+        /// <summary>
+        /// 返回List集合
+        /// </summary>
+        /// <returns></returns>
+        public List<<%=Table.Name %>Entity> GetAllToList()
+        {
+            return _repository.GetAll().ToList();
+        }
+
+
+
+        /// <summary>
+        /// 返回IQueryable集合
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<<%=Table.Name %>Entity> GetAll()
+        {
+            return _repository.GetAll();
+        }
+
+        /// <summary>
+        /// 返回分页后的集合
+        /// </summary>
+        /// <param name="pageIndex">页数 默认1页</param>
+        /// <param name="pageSize">每页多少条数据,默认10条</param>
+        /// <returns></returns>
+        public Pager<<%=Table.Name %>Entity> GetPagerList(int pageIndex = 1, int pageSize = 10)
+        {
+            return new Pager<<%=Table.Name %>Entity>(GetAll().OrderBy(d=>d.Id), pageIndex, pageSize);
+        }
+
+
+        /// <summary>
+        /// 根据主键获取实体
+        /// </summary>
+        /// <param name="keyValue"></param>
+        /// <returns></returns>
+        public <%=Table.Name %>Entity GetEntity(string keyValue)
+        {
+            return _repository.Get(keyValue);
+        }
+
+        #endregion
+
+
+        #region 提交数据
+
+        /// <summary>
+        /// 保存或添加实体
+        /// </summary>
+        /// <param name="keyValue">主键</param>
+        /// <param name="model">实体</param>
+        public void SaveEntity(string keyValue, <%=Table.Name %>Entity model)
+        {
+            if (!string.IsNullOrEmpty(keyValue))
+            {
+                var firstModel = _repository.Get(keyValue);
+                var propertyInfosFirst = firstModel.GetType();
+                var propertyInfosLast = model.GetType().GetProperties();
+                foreach (var propertyInfo in propertyInfosLast)
+                {
+                    var value = propertyInfo.GetValue(model, null);
+                    var name = propertyInfo.Name;
+                    if (value != null)
+                    {
+                        propertyInfosFirst.GetProperty(name).SetValue(firstModel, value);
+                    }
+                }
+            }
+            else
+            {
+                model.Create();
+                _repository.Insert(model);
+            }
+
+        }
+
+
+        /// <summary>
+        /// 根据主键删除单个实体
+        /// </summary>
+        /// <param name="keyValue">主键</param>
+        public void DeleteEntity(string keyValue)
+        {
+            if (!string.IsNullOrEmpty(keyValue))
+            {
+                _repository.Get(keyValue).status=0;
+            }
+        }
+
+        #endregion
+
+
+    }
+}

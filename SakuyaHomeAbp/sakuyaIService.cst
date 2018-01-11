@@ -1,0 +1,66 @@
+﻿<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Template Language="C#" TargetLanguage="Text" %>
+<%@ Property Name="Table" DeepLoad="True" Type="TableSchema" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+<%@ Property Name="NameSpace" Type="System.String" %>
+using System;
+using System.Collections.Generic;
+using System.IO.Ports;
+using System.Linq;
+using System.Web.Http;
+using Abp.Application.Services;
+using Abp.Domain.Repositories;
+using AutoMapper;
+using Sakuya.Model;
+using Sakuya.Pager;
+
+namespace <%=NameSpace %>.AppServices
+{
+    public interface I<%=Table.Name %>AppService:IApplicationService
+    {
+         /// <summary>
+        /// 返回List集合
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        List<<%=Table.Name %>Entity> GetAllToList();
+
+        /// <summary>
+        /// 返回IQueryable集合
+        /// </summary>
+        /// <returns></returns>
+        IQueryable<<%=Table.Name %>Entity> GetAll();
+
+        /// <summary>
+        /// 返回分页后的集合
+        /// </summary>
+        /// <param name="pageIndex">页数 默认1页</param>
+        /// <param name="pageSize">每页多少条数据,默认10条</param>
+        /// <returns></returns>
+        [HttpGet]
+        Pager<<%=Table.Name %>Entity> GetPagerList(int pageIndex = 1, int pageSize = 10);
+
+        /// <summary>
+        /// 根据主键获取实体
+        /// </summary>
+        /// <param name="keyValue"></param>
+        /// <returns></returns>
+        [HttpGet]
+        <%=Table.Name %>Entity GetEntity(string keyValue);
+
+        /// <summary>
+        /// 保存或添加实体
+        /// </summary>
+        /// <param name="keyValue">主键</param>
+        /// <param name="model">实体</param>
+        [HttpPost]
+        void SaveEntity(string keyValue, <%=Table.Name %>Entity model);
+
+        /// <summary>
+        /// 根据主键删除单个实体
+        /// </summary>
+        /// <param name="keyValue">主键</param>
+        [HttpGet]
+        void DeleteEntity(string keyValue);
+    }
+}

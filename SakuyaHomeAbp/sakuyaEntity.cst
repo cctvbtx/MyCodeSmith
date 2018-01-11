@@ -1,0 +1,111 @@
+﻿<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Template Language="C#" TargetLanguage="Text" %>
+<%@ Property Name="Table" DeepLoad="True" Type="TableSchema" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+<%@ Property Name="NameSpace" Type="System.String" %>
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using Abp.Domain.Entities;
+using System.ComponentModel.DataAnnotations;
+
+namespace <%=NameSpace %>.Model
+{
+    /// <summary>
+    /// <%=Table.Description %>
+    /// </summary>
+    [Table("<%=Table.Name %>")]
+    public class <%=Table.Name %>Entity : Entity<string>
+    {
+
+        #region 实体成员
+        
+        <%foreach(var col in Table.Columns){ %>
+        <%if(col.IsPrimaryKeyMember){ %>
+        /// <summary>
+        /// <%=col.Description %>
+        /// </summary>
+        /// <returns></returns>
+        [Key]
+        [Column("<%=col.Name %>")]
+        public override <%=this.CreateColumnType(col) %> Id { get; set; }
+        <% }%>
+        <%else  {%>
+        /// <summary>
+        /// <%=col.Description %>
+        /// </summary>
+        /// <returns></returns>
+        [Column("<%=col.Name %>")]
+        public <%=this.CreateColumnType(col) %> <%=col.Name %> { get; set; }
+              <%} %>
+        <%  } %>
+        #endregion
+        
+        #region 扩展操作
+        
+        /// <summary>
+        /// 新增调用
+        /// </summary>
+        public void Create()
+        {
+            this.Id = Guid.NewGuid().ToString();
+        }
+        
+        /// <summary>
+        /// 编辑调用
+        /// </summary>
+        /// <param name="keyValue">主键</param>
+        public void Modify(string keyValue)
+        {
+            this.Id = keyValue;
+        }
+        
+        #endregion
+    }
+}
+
+
+<script runat="template">   
+   
+private string CreateColumnType(ColumnSchema cs)   
+{   
+    string backtye="";  
+    if(cs.AllowDBNull)  
+   {  
+    backtye= "?";   
+   }  
+     
+   switch(cs.DataType)   
+   {   
+    case DbType.AnsiString:   
+    case DbType.String:   
+    return "string";   
+    case DbType.Binary:   
+    return "byte[]";   
+    case DbType.Boolean:   
+    return "bool"+backtye;   
+    case DbType.Date:   
+    case DbType.DateTime:   
+    case DbType.Time:   
+    return "DateTime"+backtye;   
+    case DbType.Byte:   
+    case DbType.Int16:   
+    case DbType.Int32:   
+    case DbType.Int64:   
+    case DbType.UInt16:   
+    case DbType.UInt32:   
+    case DbType.UInt64:   
+    return "int"+backtye;   
+    case DbType.Currency:  
+    case DbType.VarNumeric:  
+    case DbType.Decimal:  
+    return "decimal"+backtye;  
+    case DbType.Double:  
+    return "double"+backtye;  
+    case DbType.Guid:   
+    return "Guid"+backtye;   
+             
+    default:   
+    return "object";   
+   }   
+}   
+</script>   

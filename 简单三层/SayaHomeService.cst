@@ -1,0 +1,129 @@
+﻿<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Template Language="C#" TargetLanguage="Text" %>
+<%@ Property Name="Table" DeepLoad="True" Type="TableSchema" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+<%@ Property Name="NameSpace" Type="System.String" %>
+using System;
+using System.Linq;
+using Core.Pager;
+
+namespace <%=NameSpace %>.BLL
+{
+    public class <%=Table.Name %>BLL
+    {
+        I<%=Table.Name %>Repository _repository = new <%=Table.Name %>Repository();
+    
+        #region 获取数据
+
+        /// <summary>
+        /// 返回List集合
+        /// </summary>
+        /// <returns></returns>
+        public List<<%=Table.Name %>Entity> GetList()
+        {
+            return _repository.GetAll().ToList();
+        }
+
+
+
+        /// <summary>
+        /// 返回IQueryable集合
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<<%=Table.Name %>Entity> GetAll()
+        {
+            return _repository.GetAll();
+        }
+
+        /// <summary>
+        /// 无过滤条件的分页
+        /// </summary>
+        /// <param name="pageIndex">页</param>
+        /// <param name="pageSize">每页多少数据</param>
+        /// <returns></returns>
+        public Pager<<%=Table.Name %>Entity> GetPageList(int pageIndex, int pageSize)
+        {
+            return new Pager<<%=Table.Name %>Entity>(GetList(), pageIndex, pageSize);
+        }
+
+        /// <summary>
+        /// 过滤数据后的分页
+        /// </summary>
+        /// <param name="ClassList">过滤后的集合</param>
+        /// <param name="pageIndex">页</param>
+        /// <param name="pageSize">每页多少数据</param>
+        /// <returns></returns>
+        public Pager<<%=Table.Name %>Entity> GetPageList(IQueryable<<%=Table.Name %>Entity> ClassList, int pageIndex, int pageSize)
+        {
+            
+            return new Pager<<%=Table.Name %>Entity>(ClassList, pageIndex, pageSize);
+        }
+
+        /// <summary>
+        /// 根据主键获取实体
+        /// </summary>
+        /// <param name="keyValue"></param>
+        /// <returns></returns>
+        public <%=Table.Name %>Entity GetById(string keyValue)
+        {
+            return _repository.GetById(keyValue);
+        }
+
+        #endregion
+
+
+        #region 提交数据
+
+        /// <summary>
+        /// 新增或修改
+        /// </summary>
+        /// <param name="keyValue">主键</param>
+        /// <param name="model">实体</param>
+        /// <returns></returns>
+        public <%=Table.Name %>Entity SaveOrEdit(string keyValue,<%=Table.Name %>Entity model)
+        {
+
+            if (string.IsNullOrEmpty(keyValue))
+            {
+                return _repository.Add(model);
+            }
+            else
+            {
+                return _repository.Update(model);
+            }
+
+        }
+
+
+        /// <summary>
+        /// 根据主键删除单个实体
+        /// </summary>
+        /// <param name="keyValue">主键</param>
+       public bool Delete(string keyValue)
+        {
+            var model = GetById(keyValue);
+            if (model == null)
+            {
+                return false;
+            }
+            else
+            {
+                try
+                {
+                    _repository.Delete(model);
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+
+                }
+            }
+
+        }
+
+        #endregion
+
+
+    }
+}

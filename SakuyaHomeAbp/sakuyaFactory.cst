@@ -1,0 +1,26 @@
+﻿<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Template Language="C#" TargetLanguage="Text" %>
+<%--<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" %>--%>
+<%@ Property Name="SourceDatabase" Type="SchemaExplorer.DatabaseSchema" DeepLoad="True" Optional="False" Category="01. GettingStarted - Required" Description="Database that the tables views, and storedprocedures should be based on. IMPORTANT!!! If SourceTables and SourceViews areleft blank, the Entire Database will then be generated." %>
+
+namespace 
+{
+
+    <%for(int i=0;i<SourceDatabase.Tables.Count;i++)
+    { %>
+    
+    #region  <%=SourceDatabase.Tables[i].Name%> - <%=SourceDatabase.Tables[i].Description%>
+    public class <%=SourceDatabase.Tables[i].Name%>Repository : RepositoryBase<<%=SourceDatabase.Tables[i].Name%>>, I<%=SourceDatabase.Tables[i].Name%>Repository
+    {
+        public <%=SourceDatabase.Tables[i].Name%>Repository()
+        {
+        }
+    }
+    public interface I<%=SourceDatabase.Tables[i].Name%>Repository : IRepository<<%=SourceDatabase.Tables[i].Name%>>
+    {
+    }
+    #endregion
+    
+    <% } %>
+}

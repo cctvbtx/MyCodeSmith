@@ -1,0 +1,147 @@
+﻿<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Template Language="C#" TargetLanguage="Text" %>
+<%--<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" %>--%>
+<%@ Property Name="SourceDatabase" Type="SchemaExplorer.DatabaseSchema" DeepLoad="True" Optional="False" Category="01. GettingStarted - Required" Description="Database that the tables views, and storedprocedures should be based on. IMPORTANT!!! If SourceTables and SourceViews areleft blank, the Entire Database will then be generated." %>
+<%@ Property Name="isExecuteController" Type="System.Boolean" %>
+<%@ Property Name="isExecuteEntity" Type="System.Boolean" %>
+<%@ Property Name="isExecuteService" Type="System.Boolean" %>
+<%@ Property Name="isExecuteIService" Type="System.Boolean" %>
+<%@ Property Name="NameSpace" Type="System.String" %>
+<%@ Register Name="ServiceTemplate" Template="sakuyaService.cst" MergeProperties="Flase" ExcludeProperties="" %>
+<%@ Register Name="IServiceTemplate" Template="sakuyaIService.cst" MergeProperties="Flase" ExcludeProperties="" %>
+<%@ Register Name="EntityTemplate" Template="sakuyaEntity.cst" MergeProperties="Flase" ExcludeProperties="" %>
+<%@ Register Name="ControllersTemplate" Template="sakuyaControllers.cst" MergeProperties="Flase" ExcludeProperties="" %>
+<script runat="template">
+    //解决方案输出路径
+    private string Directory = String.Empty;
+    
+    [Editor(typeof(System.Windows.Forms.Design.FolderNameEditor), typeof(System.Drawing.Design.UITypeEditor))] 
+    [Optional, NotChecked]
+    [DefaultValue("")]
+    public string OutputDirectory 
+    { 
+        get
+        {
+            return Directory;
+        }
+        set
+        {
+            if (value.EndsWith("\\")) value = value.Substring(0, value.Length - 1);
+            Directory = value;
+        } 
+    }
+</script>
+
+<script runat="template">
+    //生成ServiceTemplate类
+    private void GenerateServiceClasses()
+    {
+        CodeTemplate Template = new ServiceTemplate();
+        foreach(TableSchema table in this.SourceDatabase.Tables)
+        {
+            //生成模板
+            Template.SetProperty("Table",table);
+            Template.SetProperty("NameSpace",NameSpace);
+            //文件输出
+            var names=table.Name.Split('_');
+            if(names.Length==2){
+                Template.RenderToFile(OutputDirectory + "\\"+"AppServices"+ "\\"+names[0]+"\\"+table.Name + "AppService.cs",true);
+            }
+            else if(names.Length>2){
+                Template.RenderToFile(OutputDirectory + "\\"+"AppServices"+ "\\"+names[0]+"\\"+names[1]+"\\"+table.Name + "AppService.cs",true);
+            }
+        }
+    }
+</script>
+
+<script runat="template">
+    //生成IServiceTemplate类
+    private void GenerateIServiceClasses()
+    {
+        CodeTemplate Template = new IServiceTemplate();
+        foreach(TableSchema table in this.SourceDatabase.Tables)
+        {
+            //生成模板
+            Template.SetProperty("Table",table);
+            Template.SetProperty("NameSpace",NameSpace);
+            //文件输出
+            var names=table.Name.Split('_');
+            if(names.Length==2){
+                Template.RenderToFile(OutputDirectory + "\\"+"AppServices"+ "\\"+names[0]+"\\"+"I"+table.Name + "AppService.cs",true);
+            }
+            else if(names.Length>2){
+                Template.RenderToFile(OutputDirectory + "\\"+"AppServices"+ "\\"+names[0]+"\\"+names[1]+"\\"+"I"+table.Name + "AppService.cs",true);
+            }
+        }
+    }
+</script>
+
+<script runat="template">
+    //生成控制器类
+    private void GenerateControllerClasses()
+    {
+        ControllersTemplate Template = new ControllersTemplate();
+        foreach(TableSchema table in this.SourceDatabase.Tables)
+        {
+            //生成模板
+            Template.SetProperty("Table",table);
+            Template.SetProperty("NameSpace",NameSpace);
+            //文件输出
+            var names=table.Name.Split('_');
+            if(names.Length==2){
+                Template.RenderToFile(OutputDirectory + "\\"+"Controller"+ "\\"+names[0]+"\\"+table.Name + "Controller.cs",true);
+            }
+            else if(names.Length>2){
+                Template.RenderToFile(OutputDirectory + "\\"+"Controller"+ "\\"+names[0]+"\\"+names[1]+"\\"+table.Name + "Controller.cs",true);
+            }
+        }
+    }
+</script>
+
+<script runat="template">
+    //生成实体类
+    private void GenerateEntityClasses()
+    {
+        EntityTemplate Template = new EntityTemplate();
+        foreach(TableSchema table in this.SourceDatabase.Tables)
+        {
+            //生成模板
+            Template.SetProperty("Table",table);
+            Template.SetProperty("NameSpace",NameSpace);
+            //文件输出
+            var names=table.Name.Split('_');
+            if(names.Length==2){
+                Template.RenderToFile(OutputDirectory + "\\"+"Model"+ "\\"+names[0]+"\\"+table.Name + "Entity.cs",true);
+            }
+            else if(names.Length>2){
+                Template.RenderToFile(OutputDirectory + "\\"+"Model"+ "\\"+names[0]+"\\"+names[1]+"\\"+table.Name + "Entity.cs",true);
+            }
+        }
+    }
+</script>
+<%
+
+    if (isExecuteEntity)
+    	{
+             //创建实体层Entity类
+    		 this.GenerateEntityClasses();
+    	}
+    if (isExecuteController)
+    	{
+    		 //创建控制器类
+             this.GenerateControllerClasses();
+    	}    
+    if (isExecuteService)
+    	{
+    		 //创建服务类
+             this.GenerateServiceClasses();
+    	}
+    if (isExecuteIService)
+    	{
+    		 //创建服务接口
+             this.GenerateIServiceClasses();
+    	}
+
+Debug.WriteLine("OK");
+%>

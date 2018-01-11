@@ -1,0 +1,32 @@
+﻿<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Template Language="C#" TargetLanguage="Text" %>
+<%@ Property Name="Table" DeepLoad="True" Type="TableSchema" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+<%@ Property Name="NameSpace" Type="System.String" %>
+using <%=NameSpace %>.Core.Model;
+using System.Collections.Generic;
+
+namespace <%=NameSpace %>.BLL
+{
+    public class <%=Table.Name %>BLL :BaseBll<<%=Table.Name %>Entity>
+    {
+        public long CreateIdFromInsert(<%=Table.Name %>Entity entity)
+        {
+            entity.Create();
+            var count=Insert(entity);
+            return count;
+        }
+
+        public long CreateIdFromInsert(List<<%=Table.Name %>Entity> entitys)
+        {
+            var currentEntitys=new List<<%=Table.Name %>Entity>();
+            foreach (var baseDatabaseLinkEntity in entitys)
+            {
+                baseDatabaseLinkEntity.Create();
+                currentEntitys.Add(baseDatabaseLinkEntity);
+            }
+            var count=Insert(currentEntitys);
+            return count;
+        }
+    }
+}

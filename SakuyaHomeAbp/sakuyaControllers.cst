@@ -1,0 +1,155 @@
+﻿<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Template Language="C#" TargetLanguage="Text" %>
+<%@ Property Name="Table" DeepLoad="True" Type="TableSchema" Optional="False" Category="01. Getting Started - Required"Description="Database that the tables views, and stored procedures shouldbe based on. IMPORTANT!!! If SourceTables and SourceViews are left blank, theEntire Database will then be generated." %>
+<%@ Property Name="NameSpace" Type="System.String" %>
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using System.Web.UI;
+using AutoMapper;
+using BLL;
+using BLL.DTO;
+using Core.Pager;
+using DAL.Model;
+using Microsoft.Ajax.Utilities;
+using SakuyaTempJYAPI.Filters;
+using SakuyaTempJYAPI.ViewModel;
+using WebGrease.Css.Ast;
+
+namespace <%=NameSpace %>.Web.Controllers
+{
+    /// <summary>
+    /// <%= Table.Description %>
+    /// </summary>
+    public class <%=Table.Name %>Controller : BaseController
+    {
+        private<%=Table.Name %>BLL _bll = new <%=Table.Name %>BLL();
+
+        #region 获取数据
+ 
+
+
+        /// <summary>
+        /// 根据主键ID获取实体
+        /// </summary>
+        /// <param name="keyValue">主键</param>
+        /// <returns></returns>
+        public MessageModel GetEntity(string keyValue)
+        {
+            MessageModel messageModel = new MessageModel();
+
+            if (string.IsNullOrEmpty(keyValue))
+            {
+                messageModel.message = "请输入正确的URL地址";
+                messageModel.state = "0";
+                return messageModel;
+            }
+            messageModel.entity = _bll.GetById(keyValue);
+            if (messageModel.entity == null)
+            {
+                messageModel.message = "找不到该实体";
+                messageModel.state = "0";
+            }
+            else
+            {
+                messageModel.message = "ok";
+                messageModel.state = "1";
+            }
+            return messageModel;
+        }
+
+        /// <summary>
+        /// 获取所有数据
+        /// </summary>
+        /// <returns></returns>
+        public MessageModel GetAll(string keyValue)
+        {
+            MessageModel messageModel = new MessageModel();
+
+            List<<%=Table.Name %>> data;
+            if (string.IsNullOrEmpty(keyValue))
+            {
+                data = _bll.GetList().ToList();
+            }
+            else
+            {
+                data = _bll.GetList().ToList();
+            }
+            messageModel.state = "1";
+            messageModel.message = "ok";
+            messageModel.objects = data;
+            return messageModel;
+
+        }
+
+        /// <summary>
+        /// 获取分页数据
+        /// </summary>
+        /// <param name="keyValue">查询条件</param>
+        /// <param name="pageIndex">第几页</param>
+        /// <param name="pageSize">每页多少条</param>
+        /// <returns></returns>
+        public MessageModel GetPagerList(string keyValue, int? pageIndex, int? pageSize)
+        {
+            MessageModel messageModel = new MessageModel();
+            var list = _bll.GetList();
+            messageModel.state = "1";
+            messageModel.message = "ok";
+            messageModel.objects = new Pager<<%=Table.Name %>>(list, pageIndex ?? 1, pageSize ?? 30);
+            return messageModel;
+
+        }
+  
+        #endregion
+
+
+
+        #region 提交数据
+        /// <summary>
+        /// 新增或修改
+        /// </summary>
+        /// <param name="keyValue">主键</param>
+        /// <param name="model">实体</param>
+        /// <returns></returns>
+        [HttpPost]
+        public MessageModel SaveEntity(string keyValue, <%=Table.Name %> model)
+        {
+            MessageModel messageModel = new MessageModel();
+
+            var entity = _bll.SaveOrEdit(keyValue, model);
+            if (entity == null)
+            {
+                messageModel.state = "0";
+                messageModel.message = "保存失败";
+            }
+            messageModel.state = "1";
+            messageModel.message = "ok";
+            return messageModel;
+
+        }
+        /// <summary>
+        /// 根据主键删除实体
+        /// </summary>
+        /// <param name="keyValue">主键</param>
+        /// <returns></returns>
+        public MessageModel Delete(string keyValue)
+        {
+            MessageModel messageModel = new MessageModel();
+
+            _bll.Delete(keyValue);
+            messageModel.state = "1";
+            messageModel.message = "ok";
+            return messageModel;
+
+        }
+        #endregion
+
+    }
+}
